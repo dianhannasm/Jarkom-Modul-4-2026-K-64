@@ -1,0 +1,7 @@
+enable
+configure terminal
+router ospf 1
+network 192.243.0.0 0.0.31.255 area 0
+passive-interface FastEthernet1/0
+end
+write memory
