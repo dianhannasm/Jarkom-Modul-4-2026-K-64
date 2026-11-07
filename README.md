@@ -8,16 +8,15 @@
 
 ## Reporting
 
-## Modul 4
 ### Cisco Packet Tracer - Perancangan Topologi dan Pengalamatan CIDR  
-![Topologi Cisco Packet Tracer](asset/cpt_topologi.png)  
+<!-- Gambar topologi: tambahkan path gambar asli dari repo apabila sudah tersedia. -->
 Pada bagian Cisco Packet Tracer (CPT), dilakukan pembangunan topologi, pembagian alamat IP menggunakan CIDR, serta konfigurasi routing untuk menghubungkan seluruh subnet internal. Topologi menggunakan **13 router**, **13 switch**, dan **25 perangkat akhir**. Alokasi kelompok K-64 menggunakan blok induk `192.243.0.0/19`, dengan kebutuhan alamat pada tabel sebesar **2.814 IP**. Bagian ini khusus membahas CPT–CIDR; implementasi GNS3/VLSM dikerjakan dan dilaporkan terpisah.  
 
 ### Pembagian Alamat IP
 
 Kebutuhan alamat tiap segmen dicatat pada sheet **Rute**, kemudian dipilih prefix sesuai kapasitas subnet. Network ID, netmask, broadcast, serta rentang alamat host dihitung dan dicatat pada sheet **Pembagian IP - CIDR**. Pembagian tersebut menghasilkan 25 subnet A1–A25.  
 
-![Tabel Rute dan kebutuhan subnet](asset/rute_subnet.png)  
+![Tabel Rute dan kebutuhan subnet](IP-tree-and-subnetting/Subnet-CIDR.png)  
 
 | Subnet | Jumlah IP | Network ID / Prefix | Keterangan |
 |---|---:|---|---|
@@ -60,8 +59,7 @@ Sebagai contoh, pembagian **A1** dan **A2**:
 
 Subnet yang memiliki ukuran sama, bersebelahan, dan sejajar terhadap batas blok digabungkan bertahap dalam sheet **Penggabungan - CIDR**. Tahap awal menggunakan B1–B12 dan tahap berikutnya C1–C13.  
 
-![Penggabungan subnet CIDR](asset/penggabungan_cidr.png)  
-
+<!-- Gambar tabel Penggabungan CIDR: belum ada nama file yang terlihat di daftar repo. -->
 Beberapa contoh penggabungan yang digunakan:  
 
 | Subnet gabungan | Subnet asal | Prefix akhir | Network ID hasil |
@@ -77,7 +75,7 @@ Untuk menyelaraskan blok kecil digunakan **R1 = 192.243.0.92/30** (4 alamat cada
 
 Gambar pohon pembagian IP dibuat berdasarkan susunan tersebut:  
 
-![Pohon CIDR K-64](asset/pohon_cidr.png)  
+![Pohon CIDR K-64](IP-tree-and-subnetting/IP-Tree-CIDR.png)  
 
 Ringkasan C5 dan C13 menunjukkan **penggabungan blok alamat secara matematis**, bukan konfigurasi route summarization OSPF yang otomatis diterapkan pada router.  
 
@@ -134,6 +132,11 @@ interface FastEthernet1/1
 end
 write memory
 ```
+
+Contoh dokumentasi konfigurasi interface pada beberapa router:
+
+![Konfigurasi IP router Psyche](asset/asset-cpt-cidr/Psyche_config.png)  
+![Konfigurasi IP router Navi](asset/asset-cpt-cidr/Navi_config.png)  
 
 Alamat interface yang digunakan pada keseluruhan 13 router adalah:  
 
@@ -222,6 +225,8 @@ Pembagian IP pada 25 perangkat akhir:
 | Lain | FastEthernet0 | `192.243.31.2/26` | `192.243.31.1` |
 | Mika | FastEthernet0 | `192.243.31.3/26` | `192.243.31.1` |
 
+![Konfigurasi perangkat JJ](asset/asset-cpt-cidr/JJ.png)  
+
 Contoh pengaturan pada JJ adalah IP `192.243.30.2`, netmask `255.255.255.128`, dan gateway `192.243.30.1`. Setelah pengalamatan, koneksi lokal diuji menggunakan:  
 
 ```text
@@ -253,7 +258,9 @@ show ip route ospf
 
 Status **FULL/DR** atau **FULL/BDR** pada `show ip ospf neighbor` menandakan hubungan tetangga yang sudah terbentuk. Pada segmen bersama di Switch2, hubungan sesama router bertipe DROTHER dapat menampilkan status **2WAY/DROTHER**. Entri bertanda `O` pada tabel routing menunjukkan rute yang dipelajari melalui OSPF.  
 
-![Hasil OSPF pada Cyberia dan Wired](asset/konfigurasi_ospf.png)  
+![Hasil OSPF pada Cyberia dan Wired](asset/asset-cpt-cidr/OSPF/Cyberia_Wired.png)  
+![Hasil OSPF pada Deus dan Protocol7](asset/asset-cpt-cidr/OSPF/Deus_Protocol7.png)  
+![Hasil OSPF pada Schumann dan Accela](asset/asset-cpt-cidr/OSPF/Schumann_Accela.png)  
 
 ### Optimasi Passive-Interface
 
@@ -288,7 +295,8 @@ Daftar interface yang dibuat passive:
 | Phantoma | `FastEthernet1/0` |
 | Shibuya | `FastEthernet0/1` |
 
-![Hasil pemeriksaan OSPF setelah optimasi](asset/optimasi_ospf.png)  
+![Hasil pemeriksaan OSPF setelah optimasi](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/Cyberia_Wired.png)  
+![Optimasi OSPF Schumann dan Tachibana](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/Schumann_Tachibana.png)  
 
 Setelah passive-interface diterapkan, dilakukan ulang pengecekan `show ip ospf neighbor` dan pengujian PING antarsubnet. Router tetap dapat bertukar rute melalui interface penghubungnya.  
 
@@ -305,8 +313,7 @@ end
 write memory
 ```
 
-![Interface Cyberia dan konfigurasi Cloud0](asset/cloud_cyberia.png)  
-
+<!-- Bukti Cloud0: isi path setelah gambar Cloud0 tersedia di repository. -->
 Hasil `show ip interface brief` menunjukkan `FastEthernet0/1` **up/up**, tetapi **IP-Address unassigned**. Artinya, kabel dan status fisik Cloud0 sudah aktif; **akses eksternal, NAT, maupun alamat gateway WAN belum dikonfigurasi atau diverifikasi** pada pengujian ini.  
 
 ### Pengujian Konektivitas Antar-Subnet
@@ -338,18 +345,28 @@ Selanjutnya dilakukan pengujian konektivitas dari **JJ (`192.243.30.2`) ke 24 pe
 | JJ → 24 host lainnya | 24/24 tujuan dapat dijangkau |
 | 24 host lainnya → JJ | 24/24 sumber dapat menjangkau JJ |
 
-![Pengujian dari JJ ke host](asset/ping_terakhir_jj.png)  
+![Pengujian dari JJ ke host](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/JJ_lain.png)  
 
-![Pengujian balik dari Yasuo dan Juri ke JJ](asset/ping_terakhir_balik.png)  
+![Pengujian balik dari Yasuo dan Juri ke JJ](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_8.png)  
 
 Dokumentasi pengujian lainnya:  
 
-![Pengujian JJ ke host 1](asset/ping_jj_ke_host_1.png)  
-![Pengujian JJ ke host 2](asset/ping_jj_ke_host_2.png)  
-
-![Pengujian host ke JJ 1](asset/ping_host_ke_jj_1.png)  
-![Pengujian host ke JJ 2](asset/ping_host_ke_jj_2.png)  
-
+![Pengujian JJ ke host 1](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh.png)  
+![Pengujian JJ ke host 2](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_2.png)  
+![Pengujian JJ ke host 3](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_3.png)  
+![Pengujian JJ ke host 4](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_4.png)  
+![Pengujian JJ ke host 5](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_5.png)  
+![Pengujian JJ ke host 6](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_6.png)  
+![Pengujian JJ ke host 7](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_7.png)  
+![Pengujian JJ ke host 8](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping_jauh_8.png)  
+![Pengujian host ke JJ 1](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_1.png)  
+![Pengujian host ke JJ 2](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_2.png)  
+![Pengujian host ke JJ 3](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_3.png)  
+![Pengujian host ke JJ 4](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_4.png)  
+![Pengujian host ke JJ 5](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_5.png)  
+![Pengujian host ke JJ 6](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_6.png)  
+![Pengujian host ke JJ 7](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_7.png)  
+![Pengujian host ke JJ 8](asset/asset-cpt-cidr/OSPF_OPTIMALISASI/ping%20ke%20JJ_8.png)  
 
 Pada sebagian host PING pertama sempat mengalami *request timed out* atau kehilangan satu paket. Setelah diulang, seluruh host yang diuji kembali memberikan respons **4/4**. Pengujian melalui JJ menunjukkan konektivitas dua arah ke seluruh perangkat akhir, **tetapi tidak mencakup setiap kombinasi pasangan host secara langsung**.  
 
@@ -374,4 +391,5 @@ Hasil tes menunjukkan **24 dari 24 perangkat akhir lainnya dapat diping dari JJ 
 
 ### Hasil Akhir dan Dokumentasi
 
-Konfigurasi topologi CPT, pembagian IP CIDR, OSPF, dan optimasi passive-interface sudah diterapkan dan proyek **Cisco Packet Tracer (`.pkt`)** telah disimpan. Dokumentasi pendukung terdiri atas spreadsheet subnetting, gambar pohon CIDR, file perintah konfigurasi router/OSPF, serta screenshot pengujian. Pengumpulan file GNS3/VLSM merupakan bagian terpisah dari pekerjaan CPT–CIDR ini.  
+Konfigurasi topologi CPT, pembagian IP CIDR, OSPF, dan optimasi passive-interface sudah diterapkan dan proyek **Cisco Packet Tracer (`.pkt`)** telah disimpan. Dokumentasi pendukung terdiri atas spreadsheet subnetting, gambar pohon CIDR, file perintah konfigurasi router/OSPF, serta screenshot pengujian. Pengumpulan file GNS3/VLSM merupakan bagian terpisah dari pekerjaan CPT–CIDR ini.
+
