@@ -417,11 +417,11 @@ Jaringan utama yang digunakan dalam perancangan ini adalah:
 
 Pembagian subnet dilakukan berdasarkan kebutuhan host pada masing-masing jaringan. Subnet dengan kebutuhan host lebih besar dialokasikan terlebih dahulu, kemudian dilanjutkan dengan subnet berkapasitas lebih kecil.
 
-![subnet](ip-tree-and-subnetting/IP-Tree-VLSM.png)
+![subnet](IP-tree-and-subnetting/IP-Tree-VLSM.png)
 
 #### 2.2. Pembagian Subnet
 
-![subnet](ip-tree-and-subnetting/Subnet-VLSM.png)
+![subnet](IP-tree-and-subnetting/Subnet-VLSM.png)
 
 Hasil pembagian alamat IP menggunakan metode VLSM menghasilkan 25 subnet, yaitu A1 hingga A25.
 
@@ -492,7 +492,7 @@ Implementasi jaringan dilakukan menggunakan GNS3 dengan memanfaatkan router berb
 
 Setiap router dihubungkan sesuai rancangan topologi. Beberapa router terhubung secara langsung menggunakan interface Ethernet, sedangkan jaringan LAN menggunakan switch sebagai penghubung antara router dan end device.
 
-ss
+![topologi](asset/asset-gns-vlsm/ss-vlsm.png)
 
 #### 3.2. Pemetaan Interface
 
