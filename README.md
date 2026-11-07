@@ -393,3 +393,290 @@ Hasil tes menunjukkan **24 dari 24 perangkat akhir lainnya dapat diping dari JJ 
 
 Konfigurasi topologi CPT, pembagian IP CIDR, OSPF, dan optimasi passive-interface sudah diterapkan dan proyek **Cisco Packet Tracer (`.pkt`)** telah disimpan. Dokumentasi pendukung terdiri atas spreadsheet subnetting, gambar pohon CIDR, file perintah konfigurasi router/OSPF, serta screenshot pengujian. Pengumpulan file GNS3/VLSM merupakan bagian terpisah dari pekerjaan CPT–CIDR ini.
 
+
+## Perancangan Menggunakan GNS3 dengan VLSM
+
+### 1. Pendahuluan
+
+Dilakukan perancangan dan implementasi topologi jaringan menggunakan **Graphical Network Simulator-3 (GNS3)** dengan menerapkan metode **Variable Length Subnet Mask (VLSM)**.
+
+VLSM merupakan metode pembagian jaringan yang memungkinkan penggunaan subnet mask dengan panjang prefix berbeda sesuai kebutuhan jumlah host pada setiap subnet. Dengan metode ini, alokasi alamat IP dapat dilakukan secara lebih efisien karena setiap jaringan memperoleh kapasitas alamat sesuai kebutuhan.
+
+Implementasi dilakukan menggunakan 13 router berbasis Linux yang saling terhubung untuk membentuk topologi jaringan. Selain melakukan pembagian alamat IP, dilakukan pula konfigurasi interface, routing, serta pengujian konektivitas antarsubnet hingga koneksi menuju jaringan internet.
+
+### 2. Perancangan Alamat IP dengan Metode VLSM
+
+#### 2.1. Jaringan Utama
+
+Jaringan utama yang digunakan dalam perancangan ini adalah:
+
+- Network Address: `192.243.0.0/19`
+- Subnet Mask: `255.255.224.0`
+- Total alamat IP: 8192 alamat
+- Rentang alamat: `192.243.0.0 – 192.243.31.255`
+
+Pembagian subnet dilakukan berdasarkan kebutuhan host pada masing-masing jaringan. Subnet dengan kebutuhan host lebih besar dialokasikan terlebih dahulu, kemudian dilanjutkan dengan subnet berkapasitas lebih kecil.
+
+#### 2.2. Pembagian Subnet
+
+Hasil pembagian alamat IP menggunakan metode VLSM menghasilkan 25 subnet, yaitu A1 hingga A25.
+
+| Subnet | Jaringan | Network Address | Prefix |
+|---|---|---|---|
+| A1 | Cyberia – Switch1 | 192.243.14.0 | /25 |
+| A2 | Cyberia – Wired | 192.243.16.56 | /30 |
+| A3 | Psyche – Switch3 | 192.243.0.0 | /22 |
+| A4 | Accela – Switch5 | 192.243.4.0 | /22 |
+| A5 | Copland – Switch4 | 192.243.8.0 | /23 |
+| A6 | Tachibana – Switch9 | 192.243.10.0 | /23 |
+| A7 | Navi – Switch6 | 192.243.12.0 | /24 |
+| A8 | Navi – Switch8 | 192.243.13.0 | /24 |
+| A9 | Deus – Switch10 | 192.243.14.128 | /25 |
+| A10 | Shibuya – Switch13 | 192.243.15.0 | /26 |
+| A11 | Navi – Switch7 | 192.243.15.64 | /26 |
+| A12 | Protocol7 – Switch11 | 192.243.15.128 | /26 |
+| A13 | Copland – Juri | 192.243.15.192 | /26 |
+| A14 | Phantoma – Switch12 | 192.243.16.0 | /27 |
+| A15 | Wired, Psyche, Copland, Schumann | 192.243.16.32 | /29 |
+| A16 | Schumann – Akashic | 192.243.16.40 | /29 |
+| A17 | Knights – Eiri | 192.243.16.48 | /29 |
+| A18 | Wired – Navi | 192.243.16.60 | /30 |
+| A19 | Wired – Tachibana | 192.243.16.64 | /30 |
+| A20 | Tachibana – Deus | 192.243.16.68 | /30 |
+| A21 | Deus – Protocol7 | 192.243.16.72 | /30 |
+| A22 | Protocol7 – Knights | 192.243.16.76 | /30 |
+| A23 | Knights – Phantoma | 192.243.16.80 | /30 |
+| A24 | Phantoma – Shibuya | 192.243.16.84 | /30 |
+| A25 | Schumann – Accela | 192.243.16.88 | /30 |
+
+Pemilihan prefix disesuaikan dengan kebutuhan masing-masing jaringan. Subnet dengan jumlah host besar menggunakan prefix seperti `/22`, `/23`, dan `/24`, sedangkan koneksi point-to-point ant arouter menggunakan `/30` karena hanya membutuhkan dua alamat IP yang dapat digunakan.
+
+Subnet A15 menggunakan `/29` karena menghubungkan empat router dalam satu jaringan bersama. Sementara itu, A16 dan A17 menggunakan `/29` untuk menyediakan kapasitas alamat yang mencukupi bagi koneksi router dan perangkat tujuan.
+
+#### 2.3. Contoh Perhitungan Subnet
+
+Sebagai contoh, subnet A2 menggunakan network address `192.243.16.56/30`.
+
+Dengan prefix `/30`, subnet tersebut memiliki:
+- Subnet Mask: `255.255.255.252`
+- Network Address: `192.243.16.56`
+- Host pertama: `192.243.16.57`
+- Host kedua: `192.243.16.58`
+- Broadcast Address: `192.243.16.59`
+
+Alamat IP tersebut kemudian digunakan untuk menghubungkan router Cyberia dengan router Wired.
+
+### 3. Implementasi Topologi pada GNS3
+
+#### 3.1. Pembuatan Topologi
+
+Implementasi jaringan dilakukan menggunakan GNS3 dengan memanfaatkan router berbasis Linux. Topologi terdiri dari 13 router, yaitu:
+
+1. Cyberia
+2. Wired
+3. Psyche
+4. Accela
+5. Copland
+6. Tachibana
+7. Navi
+8. Deus
+9. Protocol7
+10. Knights
+11. Phantoma
+12. Shibuya
+13. Schumann
+
+Setiap router dihubungkan sesuai rancangan topologi. Beberapa router terhubung secara langsung menggunakan interface Ethernet, sedangkan jaringan LAN menggunakan switch sebagai penghubung antara router dan end device.
+
+ss
+
+#### 3.2. Pemetaan Interface
+
+Setiap interface pada router memiliki fungsi dan alamat IP yang berbeda sesuai subnet yang digunakan. Sebagai contoh, router Cyberia memiliki tiga interface utama:
+
+| Interface | Koneksi | Alamat IP |
+|---|---|---|
+| eth0 | NAT1 | DHCP |
+| eth1 | Wired | 192.243.16.57/30 |
+| eth2 | Switch1 | 192.243.14.1/25 |
+
+Pemetaan interface dilakukan agar setiap alamat IP ditempatkan pada koneksi yang sesuai dengan rancangan topologi.
+
+### 4. Konfigurasi IP Address
+
+Konfigurasi alamat IP dilakukan melalui terminal Linux pada masing-masing router. Berbeda dengan konfigurasi router Cisco, konfigurasi pada router Linux menggunakan perintah `ip addr`.
+
+Contoh konfigurasi pada router Cyberia:
+
+```bash
+ip addr replace 192.243.16.57/30 dev eth1
+ip addr replace 192.243.14.1/25 dev eth2
+```
+
+Perintah tersebut digunakan untuk memasang alamat IP pada interface `eth1` dan `eth2`.
+
+Untuk memeriksa konfigurasi alamat IP yang telah diterapkan, digunakan perintah:
+
+```bash
+ip -br addr
+```
+
+Perintah tersebut menampilkan daftar interface beserta alamat IP secara ringkas sehingga memudahkan pemeriksaan konfigurasi.
+
+![cyberia](asset/asset-gns-vlsm/cyberia.png)
+
+### 5. Konfigurasi Routing
+
+#### 5.1. Mengaktifkan IP Forwarding
+
+Agar router dapat meneruskan paket dari satu jaringan menuju jaringan lainnya, fitur IP forwarding perlu diaktifkan.
+
+Perintah yang digunakan:
+
+```bash
+sysctl -w net.ipv4.ip_forward=1
+```
+
+Untuk memeriksa apakah IP forwarding telah aktif:
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+Apabila konfigurasi berhasil, terminal akan menampilkan:
+
+```text
+net.ipv4.ip_forward = 1
+```
+
+Nilai `1` menunjukkan bahwa router telah diizinkan meneruskan paket IPv4 antarmuka jaringan.
+
+#### 5.2. Konfigurasi Routing
+
+Routing dikonfigurasi menggunakan perintah `ip route replace` untuk menentukan jalur yang digunakan ketika paket dikirim menuju jaringan lain.
+
+Contoh konfigurasi pada router Cyberia:
+
+```bash
+ip route replace 192.243.0.0/19 via 192.243.16.58 dev eth1
+```
+
+Perintah tersebut mengarahkan trafik menuju jaringan `192.243.0.0/19` melalui router Wired dengan alamat IP `192.243.16.58` melalui interface `eth1`.
+
+Untuk melihat tabel routing yang telah dikonfigurasi, digunakan perintah:
+
+```bash
+ip route
+```
+
+Tabel routing digunakan untuk memastikan bahwa router memiliki informasi jalur menuju jaringan tujuan.
+
+![wired](asset/asset-gns-vlsm/wired.png)
+
+### 6. Konfigurasi Koneksi Internet
+
+Router Cyberia berperan sebagai gateway yang menghubungkan jaringan internal dengan jaringan luar melalui interface NAT.
+
+#### 6.1. Mendapatkan Alamat IP dari DHCP
+
+Interface `eth0` pada router Cyberia dihubungkan ke NAT GNS3. Alamat IP diperoleh secara otomatis melalui DHCP menggunakan perintah:
+
+```bash
+udhcpc -i eth0
+```
+
+Berdasarkan hasil konfigurasi, interface tersebut memperoleh alamat IP `192.168.122.144/24` dengan gateway `192.168.122.1`.
+
+#### 6.2. Konfigurasi Default Route
+
+Agar trafik menuju jaringan luar dapat diteruskan melalui gateway NAT, digunakan perintah:
+
+```bash
+ip route replace default via 192.168.122.1 dev eth0
+```
+
+#### 6.3. Konfigurasi NAT
+
+Network Address Translation (NAT) digunakan agar perangkat pada jaringan internal dapat mengakses jaringan luar melalui alamat IP interface eksternal Cyberia.
+
+Konfigurasi dilakukan menggunakan:
+
+```bash
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+```
+
+Dengan konfigurasi tersebut, alamat sumber paket dari jaringan internal akan disesuaikan menggunakan alamat IP interface keluar Cyberia.
+
+![cyberia](asset/asset-gns-vlsm/cyberia.png)
+
+### 7. Pengujian Konektivitas
+
+Setelah konfigurasi alamat IP dan routing selesai dilakukan, pengujian dilakukan untuk memastikan komunikasi antarperangkat dapat berjalan dengan baik.
+
+Pengujian dilakukan menggunakan perintah `ping` dengan mengirimkan empat paket ICMP ke alamat IP tujuan.
+
+#### 7.1. Pengujian Antarrouter
+
+Pengujian dilakukan terhadap koneksi langsung antarrouter untuk memastikan setiap link telah dikonfigurasi dengan benar.
+
+Contoh:
+
+```bash
+ping -c 4 192.243.16.57
+```
+
+Pengujian koneksi antarrouter dilakukan pada setiap link yang terhubung dalam topologi.
+
+#### 7.2. Pengujian Antarjaringan
+
+Pengujian juga dilakukan dari end device untuk memastikan perangkat dapat berkomunikasi dengan perangkat lain yang berada pada subnet berbeda.
+
+Salah satu pengujian dilakukan dari perangkat JJ menuju perangkat lain pada jaringan.
+
+![jj](asset/asset-gns-vlsm/jj-ping-01.png)
+![jj](asset/asset-gns-vlsm/jj-ping-02.png)
+
+#### 7.3. Pengujian Koneksi Internet
+
+Pengujian koneksi internet dilakukan dari perangkat JJ dengan mengirimkan paket ICMP menuju alamat IP publik `8.8.8.8`.
+
+Perintah yang digunakan:
+
+```bash
+ping -c 4 8.8.8.8
+```
+
+Hasil pengujian menunjukkan bahwa keempat paket berhasil diterima dengan persentase packet loss sebesar 0%.
+
+Hasil tersebut menunjukkan bahwa perangkat pada jaringan internal telah berhasil mengakses alamat IP publik melalui gateway Cyberia.
+
+![jj](asset/asset-gns-vlsm/jj-ping-8-8-8-8.png)
+
+### 8. Kendala dan Penyelesaian
+
+Selama proses implementasi jaringan menggunakan GNS3, terdapat beberapa kendala yang perlu diselesaikan.
+
+| Kendala | Penyelesaian |
+|---|---|
+| Kesalahan pemilihan interface saat konfigurasi IP | Memeriksa interface menggunakan `ip -br addr` sebelum memasang alamat IP. |
+| Koneksi antarrouter belum berhasil | Memeriksa pemetaan interface, alamat IP, prefix, serta koneksi antarnode. |
+| Perintah konfigurasi tidak tersimpan setelah router dijalankan ulang | Menyimpan konfigurasi ke dalam file `/root/config.sh` agar dapat dijalankan kembali. |
+| Perangkat internal belum dapat mengakses jaringan luar | Memeriksa DHCP, default route, IP forwarding, dan konfigurasi NAT pada Cyberia. |
+
+Untuk menjaga konfigurasi agar dapat diterapkan kembali, perintah-perintah konfigurasi disimpan dalam file `config.sh` pada masing-masing router.
+
+### 9. Analisis
+
+Berdasarkan implementasi yang dilakukan, metode VLSM memungkinkan pembagian alamat IP dengan kapasitas subnet yang disesuaikan terhadap kebutuhan host pada masing-masing jaringan. Penggunaan prefix yang berbeda membantu menghindari penggunaan alamat IP secara berlebihan.
+
+Implementasi pada GNS3 menggunakan router berbasis Linux sehingga konfigurasi jaringan dilakukan melalui perintah terminal. Pengaturan alamat IP menggunakan `ip addr`, pengaturan jalur komunikasi menggunakan `ip route`, serta pengaktifan penerusan paket menggunakan IP forwarding.
+
+Pengujian konektivitas menunjukkan bahwa komunikasi antarperangkat dapat dilakukan setelah konfigurasi alamat IP dan routing diterapkan. Selain itu, keberhasilan pengujian dari JJ menuju `8.8.8.8` menunjukkan bahwa konfigurasi gateway dan NAT pada Cyberia telah memungkinkan jaringan internal mengakses jaringan luar.
+
+### 10. Kesimpulan
+
+Berdasarkan praktikum yang telah dilakukan, perancangan jaringan menggunakan GNS3 dengan metode VLSM berhasil diimplementasikan berdasarkan pembagian 25 subnet dari jaringan utama `192.243.0.0/19`.
+
+Konfigurasi dilakukan pada 13 router berbasis Linux dengan pengaturan alamat IP, routing, dan IP forwarding. Router Cyberia juga dikonfigurasi sebagai gateway untuk menghubungkan jaringan internal dengan jaringan luar melalui NAT.
+
+Hasil pengujian menunjukkan bahwa konektivitas antarjaringan berhasil dilakukan dan perangkat JJ dapat mengakses alamat IP publik `8.8.8.8` dengan 0% packet loss. Dengan demikian, implementasi topologi jaringan menggunakan metode VLSM pada GNS3 telah berhasil dilakukan sesuai rancangan.
